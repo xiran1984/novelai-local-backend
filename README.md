@@ -1,9 +1,9 @@
 # NovelAI Local Backend
 
 ## 最简单的使用方法
-
+确保novelai可以正常生图，并且可以获取apikey，然后跟agent应用说：
 ```text
-获取novelai的apikey，确保可以正常生图，然后将网址发给agent应用，它就能自动安装成功。
+帮我安装 https://github.com/xiran1984/novelai-local-backend，请仔细阅读readme帮我安装好，并实际生成一张测试图。
 ```
 
 一个很小的本地 HTTP 服务：接收提示词，按顺序调用 NovelAI 官方图像接口出图，并把 PNG 和参数记录保存到本地。也支持把本地图片重新上传给 NovelAI 做高清放大。
