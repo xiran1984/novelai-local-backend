@@ -1,0 +1,4 @@
+interface:
+  display_name: "参考图转 NovelAI 提示词"
+  short_description: "分析参考图并输出可直接用于 NovelAI 的分段英文提示词"
+  default_prompt: "使用 $image-to-novelai-prompt 分析这张参考图，并按固定栏目生成完整英文提示词。"

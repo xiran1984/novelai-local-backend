@@ -19,7 +19,7 @@ from typing import Any, Optional
 
 import httpx
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 APP_DIR = Path(__file__).resolve().parent
 
@@ -170,6 +170,7 @@ def _call_novelai(key: str, body: dict[str, Any]) -> bytes:
     headers = {
         "Authorization": f"Bearer {key}",
         "Content-Type": "application/json",
+        "Accept": "application/zip",
     }
     try:
         with httpx.Client(timeout=120.0) as client:
@@ -187,7 +188,7 @@ def _call_novelai(key: str, body: dict[str, Any]) -> bytes:
             status_code=502,
             detail=f"NovelAI server error ({resp.status_code}): {resp.text[:200]}",
         )
-    if resp.status_code != 200:
+    if resp.status_code not in (200, 201):
         raise HTTPException(
             status_code=502,
             detail=f"NovelAI error ({resp.status_code}): {resp.text[:200]}",
@@ -419,17 +420,19 @@ def generate_batch(req: BatchRequest) -> dict[str, Any]:
 class UpscaleRequest(BaseModel):
     """Locate a local PNG and re-upload to NovelAI /ai/upscale."""
 
+    model_config = ConfigDict(extra="forbid")
     filename: str  # outputs filename, absolute path, or numeric suffix like "0"
-    scale: int = Field(default=4, description="2 or 4")
     output_name: Optional[str] = None  # default: {stem}{UPSCALE_SUFFIX}.png
+    model: str = DEFAULT_MODEL
 
 
-def _call_upscale(key: str, image_b64: str, width: int, height: int, scale: int) -> bytes:
+def _call_upscale(key: str, image_b64: str, model: str) -> bytes:
     headers = {
         "Authorization": f"Bearer {key}",
         "Content-Type": "application/json",
+        "Accept": "application/zip",
     }
-    body = {"image": image_b64, "width": width, "height": height, "scale": scale, "model": DEFAULT_MODEL}
+    body = {"image": image_b64, "model": model}
     try:
         with httpx.Client(timeout=180.0) as client:
             resp = client.post(NOVELAI_UPSCALE_URL, headers=headers, json=body)
@@ -464,32 +467,36 @@ def _call_upscale(key: str, image_b64: str, width: int, height: int, scale: int)
 
 @app.post("/upscale")
 def upscale(req: UpscaleRequest) -> dict[str, Any]:
-    if req.scale not in (2, 4):
-        raise HTTPException(status_code=400, detail="scale must be 2 or 4")
     key = _require_key()
     src = _resolve_local_image(req.filename)
-    png_bytes = src.read_bytes()
-    width, height = _png_size(png_bytes)
-    # NovelAI expects raw base64 without data: URL prefix
-    b64 = base64.b64encode(png_bytes).decode("ascii")
-    out_png = _call_upscale(key, b64, width, height, req.scale)
-
     stem = src.stem
     # strip a prior suffix if re-upscaling
     if stem.endswith(UPSCALE_SUFFIX):
         stem = stem[: -len(UPSCALE_SUFFIX)].rstrip("_")
     out_name = req.output_name or f"{stem}{UPSCALE_SUFFIX}.png"
+    if Path(out_name).name != out_name or out_name in (".", ".."):
+        raise HTTPException(status_code=400, detail="output_name must be a filename, not a path")
     if not out_name.lower().endswith(".png"):
         out_name += ".png"
+
+    png_bytes = src.read_bytes()
+    width, height = _png_size(png_bytes)
+    # NovelAI expects raw base64 without data: URL prefix
+    b64 = base64.b64encode(png_bytes).decode("ascii")
+    out_png = _call_upscale(key, b64, req.model)
+    result_width, result_height = _png_size(out_png)
+
     out_path = _unique_path(OUTPUTS_DIR, out_name)
     out_path.write_bytes(out_png)
     meta = {
         "source": str(src.resolve()),
         "path": str(out_path.resolve()),
         "filename": out_path.name,
-        "scale": req.scale,
+        "model": req.model,
         "source_width": width,
         "source_height": height,
+        "result_width": result_width,
+        "result_height": result_height,
         "created_at": datetime.now().strftime("%Y%m%d_%H%M%S"),
     }
     _write_sidecar(out_path, meta)
