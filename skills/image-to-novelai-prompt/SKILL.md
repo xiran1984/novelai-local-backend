@@ -8,9 +8,7 @@ description: >-
 ---
 # Reference Image to NovelAI Prompt
 
-Inspect the attached image itself before writing. Describe visible evidence and avoid presenting guessed character identities, artists, franchises, or hidden generation settings as facts. If the user supplies a character identity, preserve it unless the image clearly conflicts.
-
-**No artist names.** This skill never adds `artist:` tags or any real artist's name to a prompt, and never tries to imitate a specific living artist's style. Describe the look with neutral style tags instead (line quality, shading, coloring, palette, mood). If the user chooses to add artist tags themselves, that is their own decision and responsibility; do not suggest names.
+Inspect the attached image itself before writing. Describe visible evidence and avoid presenting guessed character identities, franchises, or hidden generation settings as facts. If the user supplies a character identity, preserve it unless the image clearly conflicts.
 
 ## Why two outputs
 
@@ -85,9 +83,9 @@ Translate the reference into a composition with an intentional reading order.
 - Direct hair, collar, folds, accessories, and light toward or around the face unless another focal point is requested.
 - Prefer limited value steps and clean color-block boundaries for anime readability.
 
-## Seek authored difference without imitation
+## Preserve distinctive visual choices
 
-- Preserve unusual image-specific choices; never imitate a specific artist's style or add artist names.
+- Preserve unusual image-specific choices.
 - Make pose and camera less generic when the reference supports it, without breaking anatomy or identity.
 - Build fashion through controlled unfamiliarity when appropriate.
 - Give the frame a concrete unanswered question grounded in visible action, expression, gaze, or environment—do not fabricate canon.
@@ -103,7 +101,7 @@ Use the shortest prompt that preserves defining information.
 - One clear phrase per visual idea; remove exact duplicates and near-synonym stacks.
 - Omit anatomy tags for parts outside the frame.
 - Prefer observable features over vague praise (`beautiful`, `detailed`, `cinematic` spam).
-- Keep `# General Quality` compact; never add artist names.
+- Keep `# General Quality` compact.
 - Before answering, reread across section boundaries and remove repetition; the paste-ready string must not reintroduce what you just cleaned.
 
 ## Avoid unintended frames

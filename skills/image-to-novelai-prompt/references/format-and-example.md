@@ -7,7 +7,7 @@ Emit **two** blocks by default:
 
 Do not add explanations before or after unless uncertainty materially affects the result. Prefer dense Danbooru-style tags over prose sentences. The example is intentionally economical: each phrase should add a distinct visual instruction.
 
-The first two sections are the user's fixed prefix. The version below is a neutral default with no artist names; replace it with your own. Once set, reproduce it exactly, including spelling, weights, punctuation, and escaping, unless the user explicitly asks to edit it:
+The first two sections are the user's fixed prefix. The version below is a default; replace it with your own. Once set, reproduce it exactly, including spelling, weights, punctuation, and escaping, unless the user explicitly asks to edit it:
 
 # General Quality
 
